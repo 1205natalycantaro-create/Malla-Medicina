@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Malla Curricular - Medicina Humana (Interactiva)</title>
+<style>
+  :root{
+    --bg:#f6ebe0;
+    --card:#fff6f0;
+    --muted:#b9a79a;
+    --accent:#c79d7a;
+    --green:#7bbf9e;
+    --locked:#e6d6cd;
+    --shadow: 0 6px 18px rgba(0,0,0,0.08);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#f6ebe0 0%, #f1e4da 100%);color:#3b302a;}
+  .page{
+    max-width:1200px;margin:28px auto;padding:28px;
+    background:
+      radial-gradient(600px 300px at 10% 10%, rgba(199,157,122,0.08), transparent 10%),
+      radial-gradient(400px 200px at 90% 90%, rgba(188,155,130,0.06), transparent 10%);
+    border-radius:18px;box-shadow:var(--shadow);
+  }
+
+  header{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+  .logo{
+    width:68px;height:68px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#e8c9b0);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;box-shadow:0 6px 18px rgba(199,157,122,0.18);
+  }
+  h1{margin:0;font-size:20px;}
+  p.sub{margin:0;color:var(--muted);font-size:13px;}
+
+  .controls{display:flex;gap:10px;margin-top:12px;align-items:center;}
+  button, .linklike{
+    background:var(--card);border:1px solid rgba(0,0,0,0.06);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600;
+  }
+  button:hover{transform:translateY(-2px)}
+  .mutedbtn{background:transparent;border:0;color:var(--muted);font-weight:500}
+
+  /* Grid for cycles */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;margin-top:18px;
+  }
+  .cycle{
+    background:linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.95));
+    border-radius:14px;padding:12px;border:1px solid rgba(0,0,0,0.03);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.03);
+  }
+  .cycle h3{margin:0 0 8px 0;font-size:15px;color:#3b302a}
+  .creditsum{font-size:12px;color:var(--muted);margin-bottom:8px}
+
+  /* Course card */
+  .course{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:8px;border-radius:10px;margin-bottom:8px;background:var(--card);
+    border:1px solid rgba(0,0,0,0.03);cursor:pointer;position:relative;
+  }
+  .course.locked{background:var(--locked);cursor:not-allowed;color:#7a6a63;opacity:0.95}
+  .course.approved{background:linear-gradient(90deg,#e6f5ec,#f0faf5);border:1px solid rgba(123,191,158,0.15)}
+  .course .left{display:flex;flex-direction:column;}
+  .course .title{font-weight:700;font-size:13px}
+  .course .meta{font-size:12px;color:var(--muted)}
+  .course .credits{font-weight:700;color:var(--accent);border-radius:8px;padding:6px 8px;font-size:12px}
+
+  /* Small icons for state */
+  .dot{width:12px;height:12px;border-radius:50%}
+  .dot.ok{background:var(--green);box-shadow:0 2px 6px rgba(123,191,158,0.15)}
+  .dot.lock{background:#d6b9a0;box-shadow:none}
+
+  /* Tooltip */
+  .tooltip{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:calc(100% + 10px);
+    background:rgba(59,48,42,0.96);color:#fff;padding:10px;border-radius:8px;font-size:12px;white-space:nowrap;
+    box-shadow:0 6px 18px rgba(0,0,0,0.18);display:none;z-index:30;
+  }
+  .tooltip.show{display:block}
+  .tooltip small{display:block;color:#d8cfc8;font-weight:500;margin-top:6px;font-size:11px}
+
+  /* footer helpers */
+  .legend{display:flex;gap:12px;align-items:center;margin-top:12px;color:var(--muted);font-size:13px}
+  .legend span{display:flex;gap:6px;align-items:center}
+  .sr-only{position:absolute;left:-9999px}
+  @media (max-width:720px){
+    .page{padding:14px}
+    .logo{width:56px;height:56px}
+  }
+</style>
+</head>
+<body>
+<div class="page" role="main">
+  <header>
+    <div class="logo">MED</div>
+    <div>
+      <h1>Malla Curricular — Medicina Humana (Interactiva)</h1>
+      <p class="sub">Haz clic en una materia para marcarla como aprobada. Materias bloqueadas muestran qué te falta.</p>
+      <div class="controls">
+        <button id="resetBtn">Restablecer progreso</button>
+        <button id="exportBtn">Exportar progreso (JSON)</button>
+        <button id="importBtn">Importar progreso</button>
+        <input type="file" id="fileInput" accept="application/json" style="display:none" />
+        <div style="flex:1"></div>
+        <div style="font-size:13px;color:var(--muted)">Guardado en localStorage</div>
+      </div>
+    </div>
+  </header>
+
+  <div id="grid" class="grid" aria-live="polite"></div>
+
+  <div class="legend">
+    <span><span class="dot ok"></span> Aprobada</span>
+    <span><span class="dot lock"></span> Bloqueada</span>
+    <span style="margin-left:10px;color:var(--muted)">Consejo: pasa el cursor sobre una materia bloqueada para ver qué falta.</span>
+  </div>
+</div>
+
+<script>
+/*
+  Datos de la malla: ciclos con materias, créditos, prerrequisitos.
+  - Los prerrequisitos están expresados como nombres exactos de materias tal como aparecen en la malla.
+  - Si un prerrequisito contiene "/" se toma como que **todos** los nombres separados por "/" son prerequisitos (AND).
+    (Decidí interpretar los separadores como requisitos conjuntos, porque en la mayoría de planes son requisitos simultáneos).
+  - Si hay prerrequisitos que no coinciden con ninguna materia (ej. "Todos los cursos obligatorios..."), se consideran
+    "externos" y aparecerán en el tooltip como requisito pendiente externo.
+*/
+
+const cycles = [
+  {
+    id: "Ciclo 1",
+    courses: [
+      {name:"Quimica", credits:5, prereqs:[]},
+      {name:"Matematica", credits:3, prereqs:[]},
+      {name:"Lengua y Oratoria", credits:3, prereqs:[]},
+      {name:"Introduccion a la Medicina", credits:2, prereqs:[]},
+      {name:"Desempeno Universitario", credits:2, prereqs:[]},
+      {name:"Biologia Celular y Molecular", credits:6, prereqs:[]}
+    ]
+  },
+  {
+    id:"Ciclo 2",
+    courses:[
+      {name:"Redaccion General", credits:3, prereqs:["Lengua y Oratoria"]},
+      {name:"Realidad Nacional", credits:2, prereqs:["Lengua y Oratoria","Desempeno Universitario"]},
+      {name:"Morfofisiologia I", credits:6, prereqs:["Biologia Celular y Molecular"]},
+      {name:"Intro. a la Investigacion", credits:3, prereqs:[]},
+      {name:"Bioquimica", credits:5, prereqs:["Quimica"]},
+      {name:"Anatomia General", credits:3, prereqs:["Biologia Celular y Molecular"]}
+    ]
+  },
+  {
+    id:"Ciclo 3",
+    courses:[
+      {name:"Educacion Ambiental", credits:2, prereqs:[]},
+      {name:"Estadistica General", credits:4, prereqs:["Matematica"]},
+      {name:"Filosofia", credits:3, prereqs:[]},
+      {name:"Genetica Medica", credits:3, prereqs:["Biologia Celular y Molecular"]},
+      {name:"Inmunologia", credits:3, prereqs:["Morfofisiologia I"]},
+      {name:"Morfofisiologia II", credits:7, prereqs:["Anatomia General","Morfofisiologia I"]}
+    ]
+  },
+  {
+    id:"Ciclo 4",
+    courses:[
+      {name:"Bioetica", credits:2, prereqs:["Introduccion a la Medicina","Redaccion General"]},
+      {name:"Desarrollo y Crecimiento", credits:3, prereqs:["Biologia Celular y Molecular"]},
+      {name:"Fisiopatologia I", credits:4, prereqs:["Morfofisiologia II"]},
+      {name:"Infectologia basica", credits:5, prereqs:["Bioquimica","Morfofisiologia I"]},
+      {name:"Morfofisiologia III", credits:7, prereqs:["Anatomia General","Morfofisiologia I"]}
+    ]
+  },
+  {
+    id:"Ciclo 5",
+    courses:[
+      {name:"Bioestadistica", credits:2, prereqs:["Estadistica General"]},
+      {name:"Fisiopatologia II", credits:5, prereqs:["Morfofisiologia II"]},
+      {name:"Fundamentos de Medicina Interc", credits:2, prereqs:["Filosofia","Realidad Nacional"]},
+      {name:"Morfofisiologia IV", credits:6, prereqs:["Morfofisiologia III"]},
+      {name:"Salud mental", credits:4, prereqs:["Filosofia"]}
+    ]
+  },
+  {
+    id:"Ciclo 6",
+    courses:[
+      {name:"Anatomia Patologica", credits:4, prereqs:["Fisiopatologia II"]},
+      {name:"Apoyo al Diagnostico", credits:3, prereqs:["Morfofisiologia IV"]},
+      {name:"Farmacologia", credits:6, prereqs:["Infectologia basica"]},
+      {name:"Semiologia", credits:5, prereqs:["Fisiopatologia I","Fisiopatologia II","Inmunologia","Morfofisiologia II","Morfofisiologia III","Morfofisiologia IV"]},
+      {name:"Semiologia basada en la simula", credits:2, prereqs:["Fisiopatologia I","Fisiopatologia II","Inmunologia","Morfofisiologia II","Morfofisiologia III","Morfofisiologia IV"]}
+    ]
+  },
+  {
+    id:"Ciclo 7",
+    courses:[
+      {name:"Seguridad del Paciente y Calidad", credits:2, prereqs:["Bioetica"]},
+      {name:"Nutricion y Practicas saludables", credits:4, prereqs:["Farmacologia"]},
+      {name:"Metodologia de la Investigacion", credits:2, prereqs:["Bioestadistica"]},
+      {name:"Medicina Interna I", credits:10, prereqs:["Anatomia Patologica","Semiologia","Semiologia basada en la simula"]},
+      {name:"Epidemiologia", credits:4, prereqs:["Bioestadistica"]}
+    ]
+  },
+  {
+    id:"Ciclo 8",
+    courses:[
+      {name:"Atencion Primaria en Salud", credits:4, prereqs:["Epidemiologia"]},
+      {name:"Medicina Basada en la Evidencia", credits:2, prereqs:["Epidemiologia","Metodologia de la Investigacion"]},
+      {name:"Medicina Interna II", credits:10, prereqs:["Medicina Interna I"]},
+      {name:"Salud Publica", credits:4, prereqs:["Epidemiologia"]}
+    ]
+  },
+  {
+    id:"Ciclo 9",
+    courses:[
+      {name:"Medicina Interna III", credits:10, prereqs:["Medicina Interna II"]},
+      {name:"Medicina Legal", credits:2, prereqs:["Bioetica","Semiologia","Semiologia basada en la simula"]},
+      {name:"Simulacion Clinica Integrada", credits:3, prereqs:["Medicina Interna II"]},
+      {name:"Terapeutica", credits:2, prereqs:["Medicina Interna II"]},
+      {name:"Tesis I", credits:2, prereqs:["Medicina Basada en la Evidencia"]}
+    ]
+  },
+  {
+    id:"Ciclo 10",
+    courses:[
+      {name:"Analisis de Casos I", credits:2, prereqs:["Medicina Interna III","Simulacion Clinica Integrada","Terapeutica"]},
+      {name:"Cirugia", credits:11, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]},
+      {name:"Cuidados Paliat y Rehabili Fis", credits:2, prereqs:["Bioetica","Terapeutica"]},
+      {name:"Ecografia", credits:2, prereqs:["Apoyo al Diagnostico","Semiologia"]},
+      {name:"Simulacion Quirurgica", credits:2, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]}
+    ]
+  },
+  {
+    id:"Ciclo 11",
+    courses:[
+      {name:"Ginecologia y Obstetricia", credits:6, prereqs:["Cirugia","Simulacion Quirurgica"]},
+      {name:"Pediatria", credits:10, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]},
+      {name:"Simulacion Gineco-Obtetricia", credits:2, prereqs:["Cirugia","Simulacion Quirurgica"]},
+      {name:"Simulacion Pediatrica", credits:2, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]},
+      {name:"Tesis II", credits:2, prereqs:["Tesis I"]}
+    ]
+  },
+  {
+    id:"Ciclo 12",
+    courses:[
+      {name:"Analisis de Casos II", credits:2, prereqs:["Analisis de Casos I","Ingles A2"]},
+      {name:"Gerencia en Salud", credits:2, prereqs:["Atencion Primaria en Salud","Ingles A2"]},
+      {name:"Informatica Biomedica", credits:2, prereqs:["Atencion Primaria en Salud","Ingles A2"]},
+      {name:"Pre-Internado", credits:16, prereqs:["Todos los cursos obligatorios hasta el XI ciclo","acreditacion de suficiencia en ingles (Nivel B2 o superior)"]}
+    ]
+  },
+  {
+    id:"Ciclo 13",
+    courses:[
+      {name:"Inter en Ginecolo y Obstetric", credits:10, prereqs:["Todos los cursos obligatorios hasta el XII ciclo","8 creditos electivos","Examen de suficiencia medica"]},
+      {name:"Internado en Cirugia", credits:10, prereqs:["Todos los cursos obligatorios hasta el XII ciclo","8 creditos electivos","Examen de suficiencia medica"]},
+      {name:"Internado en Medicina", credits:10, prereqs:["Todos los cursos obligatorios hasta el XII ciclo","8 creditos electivos","Examen de suficiencia medica"]},
+      {name:"Internado en Pediatria", credits:10, prereqs:["Todos los cursos obligatorios hasta el XII ciclo","8 creditos electivos","Examen de suficiencia medica"]},
+      {name:"Trabajo de investigacion", credits:1, prereqs:["Todos los cursos obligatorios hasta el XII ciclo","8 creditos electivos","Examen de suficiencia medica"]}
+    ]
+  },
+  {
+    id:"Cursos Electivos",
+    courses:[
+      {name:"Uso Corr. de Antibi y M. de In", credits:2, prereqs:[]},
+      {name:"Simulacion en Salud", credits:2, prereqs:[]},
+      {name:"Radioanatomia", credits:2, prereqs:[]},
+      {name:"Proc cognit y teorias del Apre", credits:2, prereqs:[]},
+      {name:"Primeros Auxilios (E)", credits:2, prereqs:[]}
+    ]
+  }
+];
+
+// util: flat list and map of course names
+const courseMap = new Map();
+cycles.forEach(c=>{
+  c.courses.forEach(course=>{
+    courseMap.set(course.name, course);
+  });
+});
+
+// localStorage key
+const STORAGE_KEY = "mallaMedicinaApproved_v1";
+
+// load approved map from storage
+let approved = {};
+try{
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw) approved = JSON.parse(raw);
+} catch(e){ approved = {}; }
+
+// helper: ensure prereq array normalized (split on "/" and trim)
+function normalizePrereqs(arr){
+  return arr.map(p=>{
+    if(typeof p !== "string") return p;
+    // if the prereq string contains "/" treat each segment as an individual prereq that must be satisfied
+    const parts = p.split("/").map(s=>s.trim()).filter(Boolean);
+    return parts.length>1 ? parts : p.trim();
+  }).flat();
+}
+
+// Pre-normalize prereqs for all courses into arrays of prerequisite names
+cycles.forEach(c=>{
+  c.courses.forEach(course=>{
+    if(!course.prereqs) course.prereqs = [];
+    if(Array.isArray(course.prereqs)){
+      // split any string with "/" into multiple prerequisites
+      let flat = [];
+      course.prereqs.forEach(p=>{
+        if(typeof p === "string" && p.includes("/")){
+          p.split("/").forEach(seg=>{
+            const s = seg.trim();
+            if(s) flat.push(s);
+          });
+        } else if(typeof p === "string" && p.includes(",")){
+          // also split commas
+          p.split(",").forEach(seg=>{
+            const s = seg.trim();
+            if(s) flat.push(s);
+          });
+        } else {
+          // normal single prereq string
+          if(typeof p === "string" && p.trim() !== "") flat.push(p.trim());
+        }
+      });
+      course.prereqs = flat;
+    }
+  });
+});
+
+// checks if a course is unlocked: all prereqs that match existing course names must be approved
+function getMissingPrereqs(course){
+  const missing = [];
+  (course.prereqs || []).forEach(p=>{
+    if(courseMap.has(p)){
+      if(!approved[p]) missing.push(p);
+    } else {
+      // external prereq (text that isn't a course name)
+      missing.push(p + " (requisito externo)");
+    }
+  });
+  return missing;
+}
+
+function isUnlocked(course){
+  const missing = getMissingPrereqs(course);
+  return missing.length === 0;
+}
+
+function render(){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  cycles.forEach(cycle=>{
+    const col = document.createElement("section");
+    col.className = "cycle";
+    col.setAttribute("aria-label", cycle.id);
+    const title = document.createElement("h3");
+    title.textContent = cycle.id;
+    col.appendChild(title);
+
+    // sum credits displayed (sum of courses)
+    const totalCredits = cycle.courses.reduce((s,cr)=>s+(Number(cr.credits)||0),0);
+    const csum = document.createElement("div");
+    csum.className = "creditsum";
+    csum.textContent = `Materias: ${cycle.courses.length} — Créditos totales: ${totalCredits}`;
+    col.appendChild(csum);
+
+    cycle.courses.forEach(course=>{
+      const item = document.createElement("div");
+      item.className = "course";
+      item.tabIndex = 0;
+      const unlocked = isUnlocked(course);
+      if(!unlocked) item.classList.add("locked");
+      if(approved[course.name]) item.classList.add("approved");
+
+      // left block (title + meta)
+      const left = document.createElement("div");
+      left.className = "left";
+      const t = document.createElement("div");
+      t.className = "title";
+      t.textContent = course.name;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const prereqText = (course.prereqs && course.prereqs.length>0) ? "Pre: " + course.prereqs.join(", ") : "";
+      meta.textContent = prereqText;
+      left.appendChild(t);
+      left.appendChild(meta);
+
+      // right block (credits + dot)
+      const right = document.createElement("div");
+      right.style.display="flex";
+      right.style.alignItems="center";
+      right.style.gap="8px";
+      const credits = document.createElement("div");
+      credits.className = "credits";
+      credits.textContent = course.credits + " cr";
+      const dot = document.createElement("div");
+      dot.className = "dot " + (approved[course.name] ? "ok" : (unlocked ? "lock" : "lock"));
+      right.appendChild(credits);
+      right.appendChild(dot);
+
+      item.appendChild(left);
+      item.appendChild(right);
+
+      // tooltip
+      const tip = document.createElement("div");
+      tip.className = "tooltip";
+      const missing = getMissingPrereqs(course);
+      if(missing.length === 0){
+        tip.innerHTML = "<strong>Desbloqueada</strong><br><small>Puedes marcarla como aprobada haciendo clic</small>";
+      } else {
+        tip.innerHTML = "<strong>Bloqueada — faltan:</strong><br>" + missing.map(m=>`- ${m}`).join("<br>");
+        tip.innerHTML += "<br><small>Si el requisito es externo (ej. examen, inglés), completa esos requisitos externos para desbloquear.</small>";
+      }
+      item.appendChild(tip);
+
+      // click handler
+      item.addEventListener("click", (ev)=>{
+        // only allow toggle if unlocked
+        if(!isUnlocked(course)){
+          // show tooltip briefly
+          showTooltipFor(item);
+          return;
+        }
+        approved[course.name] = !approved[course.name];
+        save();
+        render();
+      });
+
+      // keyboard accessibility: Enter or Space toggles (if unlocked)
+      item.addEventListener("keydown", (ev)=>{
+        if(ev.key === "Enter" || ev.key === " "){
+          ev.preventDefault();
+          item.click();
+        }
+      });
+
+      // hover show tooltip for locked items or show for unlocked on hover
+      item.addEventListener("mouseenter", ()=>{
+        showTooltipFor(item);
+      });
+      item.addEventListener("mouseleave", ()=>{
+        hideTooltipFor(item);
+      });
+
+      col.appendChild(item);
+    });
+
+    grid.appendChild(col);
+  });
+}
+
+// tooltip helpers
+function showTooltipFor(item){
+  const tip = item.querySelector(".tooltip");
+  if(!tip) return;
+  tip.classList.add("show");
+  // auto hide after 5s
+  clearTimeout(tip._timeout);
+  tip._timeout = setTimeout(()=>{ tip.classList.remove("show"); }, 4500);
+}
+function hideTooltipFor(item){
+  const tip = item.querySelector(".tooltip");
+  if(!tip) return;
+  tip.classList.remove("show");
+  clearTimeout(tip._timeout);
+}
+
+// save to localStorage
+function save(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(approved));
+  }catch(e){
+    console.warn("No se pudo guardar en localStorage", e);
+  }
+}
+
+// reset
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(!confirm("¿Restablecer todo el progreso guardado en este navegador?")) return;
+  approved = {};
+  save();
+  render();
+});
+
+// export progress
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const data = JSON.stringify(approved, null, 2);
+  const blob = new Blob([data], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "mallaMedicina_progreso.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// import progress
+document.getElementById("importBtn").addEventListener("click", ()=>{
+  document.getElementById("fileInput").click();
+});
+document.getElementById("fileInput").addEventListener("change", (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const obj = JSON.parse(e.target.result);
+      if(typeof obj === "object"){
+        approved = obj;
+        save();
+        render();
+        alert("Progreso importado correctamente.");
+      } else {
+        alert("Archivo inválido.");
+      }
+    }catch(err){ alert("No se pudo leer el archivo. Asegúrate que es un JSON válido."); }
+  };
+  reader.readAsText(f);
+  ev.target.value = "";
+});
+
+// initial render
+render();
+</script>
+</body>
+</html>
