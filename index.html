@@ -129,6 +129,15 @@
 
 const cycles = [
   {
+    id: "CURSOS A PARTE",
+    courses: [
+      {name:"Ingles A1", credits:0, prereqs:[]},
+      {name:"Ingles A2", credits:0, prereqs:[]},
+      {name:"Ingles B1", credits:0, prereqs:[]},
+      {name:"Ingles B2", credits:0, prereqs:[]},
+     ]
+  },
+  {
     id: "Ciclo 1",
     courses: [
       {name:"Quimica", credits:5, prereqs:[]},
@@ -145,7 +154,7 @@ const cycles = [
       {name:"Redaccion General", credits:3, prereqs:["Lengua y Oratoria"]},
       {name:"Realidad Nacional", credits:2, prereqs:["Lengua y Oratoria","Desempeno Universitario"]},
       {name:"Morfofisiologia I", credits:6, prereqs:["Biologia Celular y Molecular"]},
-      {name:"Intro. a la Investigacion", credits:3, prereqs:[]},
+      {name:"Intro. a la Investigacion", credits:3, prereqs:["Introduccion a la Medicina"]},
       {name:"Bioquimica", credits:5, prereqs:["Quimica"]},
       {name:"Anatomia General", credits:3, prereqs:["Biologia Celular y Molecular"]}
     ]
@@ -157,66 +166,66 @@ const cycles = [
       {name:"Estadistica General", credits:4, prereqs:["Matematica"]},
       {name:"Filosofia", credits:3, prereqs:[]},
       {name:"Genetica Medica", credits:3, prereqs:["Biologia Celular y Molecular"]},
-      {name:"Inmunologia", credits:3, prereqs:["Morfofisiologia I"]},
+      {name:"Inmunologia", credits:3, prereqs:["Morfofisiologia I", "Bioquimica"]},
       {name:"Morfofisiologia II", credits:7, prereqs:["Anatomia General","Morfofisiologia I"]}
     ]
   },
   {
     id:"Ciclo 4",
     courses:[
-      {name:"Bioetica", credits:2, prereqs:["Introduccion a la Medicina","Redaccion General"]},
-      {name:"Desarrollo y Crecimiento", credits:3, prereqs:["Biologia Celular y Molecular"]},
+      {name:"Bioetica", credits:2, prereqs:["Introduccion a la Medicina","Filosofia"]},
+      {name:"Desarrollo y Crecimiento", credits:3, prereqs:["Genetica Medica", "Morfofisiologia I"]},
       {name:"Fisiopatologia I", credits:4, prereqs:["Morfofisiologia II"]},
-      {name:"Infectologia basica", credits:5, prereqs:["Bioquimica","Morfofisiologia I"]},
-      {name:"Morfofisiologia III", credits:7, prereqs:["Anatomia General","Morfofisiologia I"]}
+      {name:"Infectologia basica", credits:5, prereqs:["Inmunologia"]},
+      {name:"Morfofisiologia III", credits:7, prereqs:["Morfofisiologia II"]}
     ]
   },
   {
     id:"Ciclo 5",
     courses:[
-      {name:"Bioestadistica", credits:2, prereqs:["Estadistica General"]},
-      {name:"Fisiopatologia II", credits:5, prereqs:["Morfofisiologia II"]},
+      {name:"Bioestadistica", credits:2, prereqs:["Estadistica General","Intro. a la Investigacion"]},
+      {name:"Fisiopatologia II", credits:5, prereqs:["Fisiopatologia I","Infectologia basica","Morfofisiologia III"]},
       {name:"Fundamentos de Medicina Interc", credits:2, prereqs:["Filosofia","Realidad Nacional"]},
       {name:"Morfofisiologia IV", credits:6, prereqs:["Morfofisiologia III"]},
-      {name:"Salud mental", credits:4, prereqs:["Filosofia"]}
+      {name:"Salud mental", credits:4, prereqs:["Bioetica"]}
     ]
   },
   {
     id:"Ciclo 6",
     courses:[
-      {name:"Anatomia Patologica", credits:4, prereqs:["Fisiopatologia II"]},
-      {name:"Apoyo al Diagnostico", credits:3, prereqs:["Morfofisiologia IV"]},
+      {name:"Anatomia Patologica", credits:4, prereqs:["Fisiopatologia II","Ingles A2","Morfofisiologia IV"]},
+      {name:"Apoyo al Diagnostico", credits:3, prereqs:["Morfofisiologia IV", "Ingles A2"]},
       {name:"Farmacologia", credits:6, prereqs:["Infectologia basica"]},
-      {name:"Semiologia", credits:5, prereqs:["Fisiopatologia I","Fisiopatologia II","Inmunologia","Morfofisiologia II","Morfofisiologia III","Morfofisiologia IV"]},
-      {name:"Semiologia basada en la simula", credits:2, prereqs:["Fisiopatologia I","Fisiopatologia II","Inmunologia","Morfofisiologia II","Morfofisiologia III","Morfofisiologia IV"]}
+      {name:"Semiologia", credits:5, prereqs:["Fisiopatologia II","Ingles A2","Morfofisiologia IV"]},
+      {name:"Semiologia basada en la simula", credits:2, prereqs:["Fisiopatologia II","Ingles A2","Morfofisiologia IV"]}
     ]
   },
   {
     id:"Ciclo 7",
     courses:[
-      {name:"Seguridad del Paciente y Calidad", credits:2, prereqs:["Bioetica"]},
+      {name:"Atencion Primaria en Salud", credits:4, prereqs:["Fundamentos de Medicina Interc","Semiologia"]},
       {name:"Nutricion y Practicas saludables", credits:4, prereqs:["Farmacologia"]},
       {name:"Metodologia de la Investigacion", credits:2, prereqs:["Bioestadistica"]},
-      {name:"Medicina Interna I", credits:10, prereqs:["Anatomia Patologica","Semiologia","Semiologia basada en la simula"]},
+      {name:"Medicina Interna I", credits:10, prereqs:["Anatomia Patologica","Semiologia","Semiologia basada en la simula","Apoyo al Diagnostico"]},
       {name:"Epidemiologia", credits:4, prereqs:["Bioestadistica"]}
     ]
   },
   {
     id:"Ciclo 8",
     courses:[
-      {name:"Atencion Primaria en Salud", credits:4, prereqs:["Epidemiologia"]},
+      {name:"Seguridad del Paciente y Calid", credits:2, prereqs:["Bioetica","Ingles B1","Medicina Interna I"]},
       {name:"Medicina Basada en la Evidencia", credits:2, prereqs:["Epidemiologia","Metodologia de la Investigacion"]},
-      {name:"Medicina Interna II", credits:10, prereqs:["Medicina Interna I"]},
-      {name:"Salud Publica", credits:4, prereqs:["Epidemiologia"]}
+      {name:"Medicina Interna II", credits:10, prereqs:["Medicina Interna I","Ingles B1"]},
+      {name:"Salud Publica", credits:4, prereqs:["Atencion Primaria en Salud","Epidemiologia","Ingles B1","Metodologia de la Investigacio"]}
     ]
   },
   {
     id:"Ciclo 9",
     courses:[
       {name:"Medicina Interna III", credits:10, prereqs:["Medicina Interna II"]},
-      {name:"Medicina Legal", credits:2, prereqs:["Bioetica","Semiologia","Semiologia basada en la simula"]},
+      {name:"Medicina Legal", credits:2, prereqs:["Bioetica","Medicina Interna II","Salud Publica"]},
       {name:"Simulacion Clinica Integrada", credits:3, prereqs:["Medicina Interna II"]},
-      {name:"Terapeutica", credits:2, prereqs:["Medicina Interna II"]},
+      {name:"Terapeutica", credits:2, prereqs:["Farmacologia","Medicina Interna II","Seguridad del Paciente y Calid"]},
       {name:"Tesis I", credits:2, prereqs:["Medicina Basada en la Evidencia"]}
     ]
   },
@@ -225,7 +234,7 @@ const cycles = [
     courses:[
       {name:"Analisis de Casos I", credits:2, prereqs:["Medicina Interna III","Simulacion Clinica Integrada","Terapeutica"]},
       {name:"Cirugia", credits:11, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]},
-      {name:"Cuidados Paliat y Rehabili Fis", credits:2, prereqs:["Bioetica","Terapeutica"]},
+      {name:"Cuidados Paliat y Rehabili Fis", credits:2, prereqs:["Seguridad del Paciente y Calid","Terapeutica"]},
       {name:"Ecografia", credits:2, prereqs:["Apoyo al Diagnostico","Semiologia"]},
       {name:"Simulacion Quirurgica", credits:2, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]}
     ]
@@ -234,7 +243,7 @@ const cycles = [
     id:"Ciclo 11",
     courses:[
       {name:"Ginecologia y Obstetricia", credits:6, prereqs:["Cirugia","Simulacion Quirurgica"]},
-      {name:"Pediatria", credits:10, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]},
+      {name:"Pediatria", credits:10, prereqs:["Analisis de Casos I"]},
       {name:"Simulacion Gineco-Obtetricia", credits:2, prereqs:["Cirugia","Simulacion Quirurgica"]},
       {name:"Simulacion Pediatrica", credits:2, prereqs:["Medicina Interna III","Simulacion Clinica Integrada"]},
       {name:"Tesis II", credits:2, prereqs:["Tesis I"]}
@@ -243,10 +252,10 @@ const cycles = [
   {
     id:"Ciclo 12",
     courses:[
-      {name:"Analisis de Casos II", credits:2, prereqs:["Analisis de Casos I","Ingles A2"]},
+      {name:"Analisis de Casos II", credits:2, prereqs:["Analisis de Casos I","Ingles B2"]},
       {name:"Gerencia en Salud", credits:2, prereqs:["Atencion Primaria en Salud","Ingles A2"]},
-      {name:"Informatica Biomedica", credits:2, prereqs:["Atencion Primaria en Salud","Ingles A2"]},
-      {name:"Pre-Internado", credits:16, prereqs:["Todos los cursos obligatorios hasta el XI ciclo","acreditacion de suficiencia en ingles (Nivel B2 o superior)"]}
+      {name:"Informatica Biomedica", credits:2, prereqs:["Ingles B2","Salud Publica"]},
+      {name:"Pre-Internado", credits:16, prereqs:["Ingles B2"]}
     ]
   },
   {
